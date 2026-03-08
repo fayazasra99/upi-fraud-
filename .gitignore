@@ -1,0 +1,8 @@
+﻿__pycache__/
+*.py[cod]
+*.db
+.venv/
+.env
+data/
+artifacts/*.pkl
+artifacts/*.json

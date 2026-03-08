@@ -1,0 +1,19 @@
+﻿services:
+  fraud-shield:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fraud-shield
+    ports:
+      - "8000:8000"
+    environment:
+      AUTH_SECRET: "replace-with-strong-secret"
+      BLOCK_THRESHOLD: "70"
+      REVIEW_THRESHOLD: "45"
+      MODEL_WEIGHT: "0.30"
+      FRAUD_DB_PATH: "/app/data/fraud_shield.db"
+      FRAUD_MODEL_PATH: "/app/artifacts/fraud_model.pkl"
+    volumes:
+      - ./data:/app/data
+      - ./artifacts:/app/artifacts
+    restart: unless-stopped
