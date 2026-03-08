@@ -1,0 +1,270 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UPI Merchant Fraud Shield</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+
+  <main class="layout">
+    <header class="hero">
+      <p class="eyebrow">Market-Impact Product Build</p>
+      <h1>UPI Merchant Fraud Shield</h1>
+      <p class="subtitle">Login-secured risk engine with batch scoring, case workflows, and ML retraining from real outcomes.</p>
+      <div id="user-row" class="user-row hidden">
+        <span id="user-chip" class="chip"></span>
+        <button id="logout-btn" type="button" class="ghost">Logout</button>
+      </div>
+      <p id="flash" class="flash" aria-live="polite"></p>
+    </header>
+
+    <section id="auth-panel" class="panel auth-panel">
+      <h3>Sign In</h3>
+      <p class="muted">Demo accounts: <code>admin/admin123</code>, <code>electro_mgr/electro123</code></p>
+      <form id="login-form" class="form-grid auth-grid" autocomplete="off">
+        <label>Username
+          <input type="text" name="username" value="admin" required>
+        </label>
+        <label>Password
+          <input type="password" name="password" value="admin123" required>
+        </label>
+        <button type="submit" class="full">Login</button>
+      </form>
+    </section>
+
+    <div id="app-shell" class="hidden">
+      <section class="panel control-panel">
+        <div class="control-grid">
+          <label>Merchant
+            <select id="merchant-select"></select>
+          </label>
+          <label>Decision Filter
+            <select id="decision-filter">
+              <option value="">All</option>
+              <option value="allow">allow</option>
+              <option value="review">review</option>
+              <option value="block">block</option>
+            </select>
+          </label>
+          <label>Status Filter
+            <select id="status-filter">
+              <option value="">All</option>
+              <option value="allow">allow</option>
+              <option value="review">review</option>
+              <option value="block">block</option>
+              <option value="investigating">investigating</option>
+              <option value="resolved_legit">resolved_legit</option>
+              <option value="confirmed_fraud">confirmed_fraud</option>
+            </select>
+          </label>
+        </div>
+        <div class="hero-actions">
+          <button id="seed-btn" type="button">Generate Demo Data</button>
+          <button id="refresh-btn" type="button" class="ghost">Refresh</button>
+        </div>
+      </section>
+
+      <section class="metrics-grid" aria-label="24 hour metrics">
+        <article class="metric-card">
+          <p>Total (24h)</p>
+          <h2 id="metric-total">0</h2>
+        </article>
+        <article class="metric-card">
+          <p>Allowed</p>
+          <h2 id="metric-allow">0</h2>
+        </article>
+        <article class="metric-card">
+          <p>Review</p>
+          <h2 id="metric-review">0</h2>
+        </article>
+        <article class="metric-card">
+          <p>Blocked</p>
+          <h2 id="metric-block">0</h2>
+        </article>
+        <article class="metric-card wide">
+          <p>Average Risk Score</p>
+          <h2 id="metric-risk">0</h2>
+        </article>
+      </section>
+
+      <section class="panel split">
+        <div>
+          <h3>Score New Transaction</h3>
+          <form id="score-form" class="form-grid" autocomplete="off">
+            <label>Merchant ID
+              <input type="text" name="merchant_id" value="MRT-ELECTRO-01" required>
+            </label>
+            <label>Payer ID
+              <input type="text" name="payer_id" value="PAYER-0001" required>
+            </label>
+            <label>Amount (INR)
+              <input type="number" name="amount" step="0.01" min="1" value="1499" required>
+            </label>
+            <label>Device ID
+              <input type="text" name="device_id" value="DEV-0102" required>
+            </label>
+            <label>Latitude
+              <input type="number" name="lat" step="0.0001" value="19.0760" required>
+            </label>
+            <label>Longitude
+              <input type="number" name="lon" step="0.0001" value="72.8777" required>
+            </label>
+            <label>Account Age (days)
+              <input type="number" name="payer_account_age_days" min="0" value="150" required>
+            </label>
+            <button type="submit" class="full">Score Transaction</button>
+          </form>
+        </div>
+
+        <aside class="result" id="score-result">
+          <h3>Last Decision</h3>
+          <div class="placeholder">No scored transaction yet.</div>
+        </aside>
+      </section>
+
+      <section class="panel split">
+        <div>
+          <h3>Batch CSV Upload</h3>
+          <p class="muted">Columns: <code>merchant_id,payer_id,amount,currency,device_id,lat,lon,payer_account_age_days,timestamp</code></p>
+          <form id="upload-form" class="upload-form" autocomplete="off">
+            <input id="upload-file" type="file" name="file" accept=".csv,text/csv" required>
+            <button type="submit">Upload And Score</button>
+          </form>
+          <pre id="upload-summary" class="mini-log">No CSV upload yet.</pre>
+        </div>
+
+        <div>
+          <h3>Model Operations</h3>
+          <div class="model-card">
+            <h4>Model Status</h4>
+            <p id="model-status" class="muted">No model status yet.</p>
+            <div class="hero-actions">
+              <button id="reload-model-btn" type="button" class="ghost">Reload Model</button>
+              <button id="train-model-btn" type="button">Train From Cases</button>
+            </div>
+            <p id="train-summary" class="muted"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel split">
+        <div>
+          <h3>Create Custom Rule</h3>
+          <form id="rule-form" class="form-grid" autocomplete="off">
+            <label>Rule Name
+              <input type="text" name="name" placeholder="Night high-value lock" required>
+            </label>
+            <label>Merchant ID (optional)
+              <input type="text" name="merchant_id" placeholder="Leave blank for global">
+            </label>
+            <label>Action
+              <select name="action" required>
+                <option value="review">review</option>
+                <option value="block">block</option>
+                <option value="allow">allow</option>
+              </select>
+            </label>
+            <label>Min Amount
+              <input type="number" name="min_amount" step="0.01" min="0" placeholder="e.g. 5000">
+            </label>
+            <label>Velocity > (10m)
+              <input type="number" name="velocity_10m_gt" min="0" placeholder="e.g. 8">
+            </label>
+            <label>Amount Spike >
+              <input type="number" name="amount_spike_gt" step="0.1" min="0" placeholder="e.g. 2.5">
+            </label>
+            <label class="check">
+              <input type="checkbox" name="require_new_device">
+              Require new device
+            </label>
+            <label class="check">
+              <input type="checkbox" name="night_hours_only">
+              Night hours only
+            </label>
+            <button type="submit" class="full">Create Rule</button>
+          </form>
+        </div>
+
+        <div>
+          <h3>Rules</h3>
+          <ul id="rule-list" class="rule-list"></ul>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="table-head">
+          <h3>Merchant Summary (24h)</h3>
+          <p>Volume and risk by merchant</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Merchant</th>
+                <th>Total</th>
+                <th>Review</th>
+                <th>Block</th>
+                <th>Avg Risk</th>
+                <th>Review Rate</th>
+                <th>Block Rate</th>
+              </tr>
+            </thead>
+            <tbody id="merchant-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="table-head">
+          <h3>Review Queue</h3>
+          <p>Analyst case handling</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Merchant</th>
+                <th>Payer</th>
+                <th>Score</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="queue-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="table-head">
+          <h3>Recent Transactions</h3>
+          <p>Latest scored decisions</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Merchant</th>
+                <th>Payer</th>
+                <th>Amount</th>
+                <th>Score</th>
+                <th>Decision</th>
+                <th>Status</th>
+                <th>Reasons</th>
+              </tr>
+            </thead>
+            <tbody id="txn-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
